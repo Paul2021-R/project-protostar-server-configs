@@ -1,31 +1,27 @@
 global:
-  scrape_interval: 10s # How often to scrape targets
+  scrape_interval: 30s # How often to scrape targets
 
 scrape_configs:
-  # 1. Monitor Prometheus itself
   - job_name: 'prometheus'
     static_configs:
       - targets: ['sub-protostar-prometheus:9090']
 
-  # 2. Monitor the monitoring server's HOST (NodeExporter_Mon)
   - job_name: 'monitoring_host'
     static_configs:
       - targets: ['sub-protostar-node-exporter:9100']
 
-  # 3. Monitor the monitoring server's CONTAINERS (cAdvisor_Mon)
   - job_name: 'monitoring_containers'
     static_configs:
-      # cAdvisor's default port inside the container is 8080
       - targets: ['sub-protostar-cadvisor:8080']
 
-  # 4. Monitor the REMOTE main service server's HOST (NodeExporter_Svc)
   - job_name: 'service_host'
     static_configs:
-      # IMPORTANT: Replace this IP with your Main Service Server's IP
       - targets: ['192.168.0.37:9100']
 
-  # 5. Monitor the REMOTE main service server's CONTAINERS (cAdvisor_Svc)
   - job_name: 'service_containers'
+    # [안정화] 논리적 충돌을 피하기 위해 주기를 40초로 명시
+    scrape_interval: 40s
+    # [안정화] 타임아웃을 30초로 설정 (데이터 처리 시간 확보)
+    scrape_timeout: 30s 
     static_configs:
-      # IMPORTANT: Replace this IP and use the port you exposed (8081)
-      - targets: ['192.168.0.37:8080']
+      - targets: ['192.168.0.37:8081']
