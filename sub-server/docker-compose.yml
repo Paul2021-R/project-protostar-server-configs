@@ -1,0 +1,57 @@
+services:
+  nginx:
+    profiles: ["sub"]
+    container_name: ${DOMAIN}-nginx
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx_target.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    networks:
+      - sub-protostar
+    restart: unless-stopped
+  
+  certbot:
+    profiles: ["sub"]
+    container_name: ${DOMAIN}-certbot
+    image: certbot/certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    networks:
+      - sub-protostar
+
+  # jenkins:
+  #   profiles: ["sub"]
+
+  # minio:
+  #   profiles: ["sub"]
+
+  # loki:
+  #   profiles: ["sub"]
+
+  # prometheus:
+  #   profiles: ["sub"]
+
+  # grafana:
+  #   profiles: ["sub"]
+
+  # node-exporter-sub:
+  #   profiles: ["sub"]
+
+  # cadvisor-sub:
+  #   profiles: ["sub"]
+
+# volumes:
+#   prometheus_data:
+#   grafana_data:
+#   minio_data: 
+
+networks:
+  sub-protostar:
+    external: true
+    name: sub-protostar

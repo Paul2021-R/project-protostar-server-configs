@@ -1,0 +1,22 @@
+services:
+  # pg:
+  #   profiles: ["main"]
+
+  # redis:
+  #   profiles: ["main"]
+
+  # node-exporter-main:
+  #   profiles: ["main"]
+
+  # cadvisor-main:
+  #   profiles: ["main"]
+
+  # promtail:
+  #   profiles: ["main"]
+
+# volumes: 
+  
+networks:
+  main-protostar:
+    external: true
+    name: main-protostar
