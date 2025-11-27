@@ -1,7 +1,7 @@
 services:
-  nginx:
+  nginx-main:
     profiles: ["main"]
-    container_name: ${DOMAIN}-nginx
+    container_name: ${DOMAIN:-main}-nginx
     image: nginx:alpine
     ports:
       - "80:80"
@@ -15,9 +15,9 @@ services:
       - main-protostar
     restart: unless-stopped
 
-  certbot:
+  certbot-main:
     profiles: ["main"]
-    container_name: ${DOMAIN}-certbot
+    container_name: ${DOMAIN:-main}-certbot
     image: certbot/certbot
     volumes:
       - ./certbot/conf:/etc/letsencrypt
@@ -25,23 +25,109 @@ services:
     networks:
       - main-protostar
 
-  # pg:
-  #   profiles: ["main"]
+  postgres:
+    profiles: ["main"]
+    container_name: ${DOMAIN:-main}-pg
+    image: pgvector/pgvector:pg17
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      POSTGRES_USER: ${DB_USER:-admin}
+      POSTGRES_PASSWORD: ${DB_PASS:-password}
+      POSTGRES_DB: protostar_prod
+    networks:
+      - main-protostar
+    restart: unless-stopped
 
-  # redis:
-  #   profiles: ["main"]
+  redis:
+    profiles: ["main"]
+    container_name: ${DOMAIN:-main}-redis
+    image: redis:alpine
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASS:-password}
+    volumes:
+      - redis_data:/data
+    networks:
+      - main-protostar
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
 
-  # node-exporter-main:
-  #   profiles: ["main"]
+  node-exporter-main:
+    profiles: ["main"]
+    container_name: ${DOMAIN:-main}-node-exporter
+    image: prom/node-exporter:latest
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    networks:
+      - main-protostar
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+    pid: host
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: '64M'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
-  # cadvisor-main:
-  #   profiles: ["main"]
-
-  # promtail:
-  #   profiles: ["main"]
-
-# volumes: 
+  cadvisor-main:
+    profiles: ["main"]
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: ${DOMAIN:-main}-cadvisor
+    restart: unless-stopped
+    ports:
+      - "8080:8080" 
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    deploy:
+      resources:
+        limits:
+          cpus: '0.15'    # (수정) CPU 15%
+          memory: '128M'  # (수정) 메모리 128MB
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
   
+  promtail:
+    profiles: ["main"]
+    container_name: ${DOMAIN:-main}-promtail
+    image: grafana/promtail:latest
+    volumes:
+      # [필수] 컨테이너가 호스트의 로그 파일을 읽을 수 있도록 마운트
+      - /var/log:/var/log:ro
+      # 설정 파일 마운트
+      - ./monitoring/promtail/promtail-config.yaml:/etc/promtail/config.yaml
+    command: -config.file=/etc/promtail/config.yaml
+    networks:
+      - main-protostar
+    restart: unless-stopped
+
+volumes: 
+  postgres_data:
+  redis_data:
+
 networks:
   main-protostar:
     external: true
