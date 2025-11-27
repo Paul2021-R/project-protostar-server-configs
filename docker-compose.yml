@@ -1,5 +1,5 @@
 include:
-  # - path: ./main-server/docker-compose.yml
-  #   env_file: ./main-server/.env
+  - path: ./main-server/docker-compose.yml
+    env_file: ./main-server/.env
   - path: ./sub-server/docker-compose.yml
     env_file: ./sub-server/.env

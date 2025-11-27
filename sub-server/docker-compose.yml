@@ -1,7 +1,7 @@
 services:
   nginx:
     profiles: ["sub"]
-    container_name: ${DOMAIN}-nginx
+    container_name: ${DOMAIN:-sub}-nginx
     image: nginx:alpine
     ports:
       - "80:80"
@@ -17,7 +17,7 @@ services:
   
   certbot:
     profiles: ["sub"]
-    container_name: ${DOMAIN}-certbot
+    container_name: ${DOMAIN:-sub}-certbot
     image: certbot/certbot
     volumes:
       - ./certbot/conf:/etc/letsencrypt
@@ -30,7 +30,7 @@ services:
     build:
       context: ./jenkins
       dockerfile: Dockerfile
-    container_name: ${DOMAIN}-jenkins
+    container_name: ${DOMAIN:-sub}-jenkins
     ports:
       - "8080:8080"
       - "50000:50000"
@@ -54,7 +54,7 @@ services:
   minio:
     profiles: ["sub"]
     image: minio/minio:latest
-    container_name: ${DOMAIN}-minio
+    container_name: ${DOMAIN:-sub}-minio
     command: server /data --console-address ":9001"
     ports:
       - "9000:9000"
@@ -62,8 +62,8 @@ services:
     volumes:
       - minio_data:/data
     environment:
-      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
-      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-admin}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-admin}
     networks:
       - sub-protostar
     restart: unless-stopped
@@ -71,7 +71,7 @@ services:
   loki:
     profiles: ["sub"]
     image: grafana/loki:latest
-    container_name: ${DOMAIN}-loki
+    container_name: ${DOMAIN:-sub}-loki
     ports:
       - "3100:3100"
     volumes:
@@ -85,7 +85,7 @@ services:
   prometheus:
     profiles: ["sub"]
     image: prom/prometheus:latest
-    container_name: ${DOMAIN}-prometheus
+    container_name: ${DOMAIN:-sub}-prometheus
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
@@ -105,7 +105,7 @@ services:
   grafana:
     profiles: ["sub"]
     image: grafana/grafana:latest
-    container_name: ${DOMAIN}-grafana
+    container_name: ${DOMAIN:-sub}-grafana
     volumes:
       - grafana_data:/var/lib/grafana
     environment:
@@ -130,7 +130,7 @@ services:
   node-exporter-sub:
     profiles: ["sub"]
     image: prom/node-exporter:latest
-    container_name: ${DOMAIN}-node-exporter
+    container_name: ${DOMAIN:-sub}-node-exporter
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
@@ -151,7 +151,7 @@ services:
   cadvisor-sub:
     profiles: ["sub"]
     image: gcr.io/cadvisor/cadvisor:latest
-    container_name: ${DOMAIN}-cadvisor
+    container_name: ${DOMAIN:-sub}-cadvisor
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:rw
