@@ -18,14 +18,14 @@ scrape_configs:
       # cAdvisor's default port inside the container is 8080
       - targets: ['sub-protostar-cadvisor:8080']
 
-  # # 4. Monitor the REMOTE main service server's HOST (NodeExporter_Svc)
-  # - job_name: 'service_host'
-  #   static_configs:
-  #     # IMPORTANT: Replace this IP with your Main Service Server's IP
-  #     - targets: ['192.168.0.37:9100']
+  # 4. Monitor the REMOTE main service server's HOST (NodeExporter_Svc)
+  - job_name: 'service_host'
+    static_configs:
+      # IMPORTANT: Replace this IP with your Main Service Server's IP
+      - targets: ['192.168.0.37:9100']
 
-  # # 5. Monitor the REMOTE main service server's CONTAINERS (cAdvisor_Svc)
-  # - job_name: 'service_containers'
-  #   static_configs:
-  #     # IMPORTANT: Replace this IP and use the port you exposed (8081)
-  #     - targets: ['192.168.0.37:8081']
+  # 5. Monitor the REMOTE main service server's CONTAINERS (cAdvisor_Svc)
+  - job_name: 'service_containers'
+    static_configs:
+      # IMPORTANT: Replace this IP and use the port you exposed (8081)
+      - targets: ['192.168.0.37:8080']

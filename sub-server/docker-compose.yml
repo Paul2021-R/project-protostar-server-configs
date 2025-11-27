@@ -75,9 +75,9 @@ services:
     ports:
       - "3100:3100"
     volumes:
-      - ./monitoring/loki-config.yaml:/etc/loki/loki-config.yaml
+      - ./monitoring/loki-config.yaml:/etc/loki/local-config.yaml
       - loki-data:/loki
-    command: -config.file=/etc/loki/loki-config.yaml
+    command: -config.file=/etc/loki/local-config.yaml
     networks:
       - sub-protostar
     restart: unless-stopped
