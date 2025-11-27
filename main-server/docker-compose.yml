@@ -1,4 +1,30 @@
 services:
+  nginx:
+    profiles: ["main"]
+    container_name: ${DOMAIN}-nginx
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx_target.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    networks:
+      - main-protostar
+    restart: unless-stopped
+
+  certbot:
+    profiles: ["main"]
+    container_name: ${DOMAIN}-certbot
+    image: certbot/certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    networks:
+      - main-protostar
+
   # pg:
   #   profiles: ["main"]
 
