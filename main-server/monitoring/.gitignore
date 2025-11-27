@@ -1,0 +1,7 @@
+prometheus_data
+grafana_data
+.DS_Store
+Thumbs.db
+.env
+*.env.local
+docker-compose.override.yml
