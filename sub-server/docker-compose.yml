@@ -25,31 +25,154 @@ services:
     networks:
       - sub-protostar
 
-  # jenkins:
-  #   profiles: ["sub"]
+  jenkins:
+    profiles: ["sub"]
+    build:
+      context: ./jenkins
+      dockerfile: Dockerfile
+    container_name: ${DOMAIN}-jenkins
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - ./jenkins/jenkins_home:/var/jenkins_home
+      # Docker CLI 사용을 위해 호스트로 마운트(DooD)
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker
+      - /usr/bin/docker-compose:/usr/bin/docker-compose
+    environment:
+      - CASC_JENKINS_CONFIG=/var/jenkins_home/casc.yaml
+    restart: unless-stopped
+    entrypoint: >
+      bash -c "
+        cp /usr/share/jenkins/ref/casc.yaml /var/jenkins_home/casc.yaml &&
+        /usr/bin/tini -- /usr/local/bin/jenkins.sh
+      "
+    networks:
+      - sub-protostar
 
-  # minio:
-  #   profiles: ["sub"]
+  minio:
+    profiles: ["sub"]
+    image: minio/minio:latest
+    container_name: ${DOMAIN}-minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    networks:
+      - sub-protostar
+    restart: unless-stopped
 
-  # loki:
-  #   profiles: ["sub"]
+  loki:
+    profiles: ["sub"]
+    image: grafana/loki:latest
+    container_name: ${DOMAIN}-loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./monitoring/loki-config.yaml:/etc/loki/loki-config.yaml
+      - loki-data:/loki
+    command: -config.file=/etc/loki/loki-config.yaml
+    networks:
+      - sub-protostar
+    restart: unless-stopped
 
-  # prometheus:
-  #   profiles: ["sub"]
+  prometheus:
+    profiles: ["sub"]
+    image: prom/prometheus:latest
+    container_name: ${DOMAIN}-prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: '512M'
+    networks:
+      - sub-protostar
+    restart: unless-stopped
 
-  # grafana:
-  #   profiles: ["sub"]
+  grafana:
+    profiles: ["sub"]
+    image: grafana/grafana:latest
+    container_name: ${DOMAIN}-grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SERVER_ROOT_URL=https://grafana.paulryu93.ddns.net/
+      # 익명 접속 허용 (기본값 false)
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      # 익명 사용자의 조직 이름 (기본값 Main Org.)
+      - GF_AUTH_ANONYMOUS_ORG_NAME=Main Org.
+      # 익명 사용자 권한 (Viewer로 설정 추천)
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+    ports:
+      - "3000:3000"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: '256M'
+    networks:
+      - sub-protostar
+    restart: unless-stopped
 
-  # node-exporter-sub:
-  #   profiles: ["sub"]
+  node-exporter-sub:
+    profiles: ["sub"]
+    image: prom/node-exporter:latest
+    container_name: ${DOMAIN}-node-exporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: '64M'
+    networks:
+      - sub-protostar
+    restart: unless-stopped
 
-  # cadvisor-sub:
-  #   profiles: ["sub"]
+  cadvisor-sub:
+    profiles: ["sub"]
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: ${DOMAIN}-cadvisor
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    deploy:
+      resources:
+        limits:
+          cpus: '0.15'
+          memory: '128M'
+    networks:
+      - sub-protostar
+    restart: unless-stopped
 
-# volumes:
-#   prometheus_data:
-#   grafana_data:
-#   minio_data: 
+volumes:
+  prometheus_data:
+  grafana_data:
+  minio_data:
+  loki-data:
 
 networks:
   sub-protostar:
