@@ -8,6 +8,7 @@ services:
       - "443:443"
     volumes:
       - ./nginx/nginx_target.conf:/etc/nginx/nginx.conf
+      - ./nginx/nginx_upstream_nextjs.conf:/etc/nginx/conf.d/service_nextjs.conf
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
