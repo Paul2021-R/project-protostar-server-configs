@@ -9,7 +9,8 @@ services:
     volumes:
       - ./nginx/nginx_target.conf:/etc/nginx/nginx.conf
       - ./nginx/nginx_upstream_nextjs.conf:/etc/nginx/conf.d/service_nextjs.conf
-      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/nginx_upstream_nestjs.conf:/etc/nginx/conf.d/service_nestjs.conf
+      - ./nginx/nginx_upstream_fastapi.conf:/etc/nginx/conf.d/service_fastapi.conf
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
     networks:
