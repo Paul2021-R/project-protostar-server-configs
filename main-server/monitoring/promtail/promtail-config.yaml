@@ -18,7 +18,7 @@ scrape_configs:
           - localhost
         labels:
           # Promtail이 로그를 수집할 대상 경로입니다.
-          __path__: /var/log/containers/*log
+          __path__: /var/lib/docker/containers/*/*-json.log
           # 모든 컨테이너 로그에 'host'와 'environment' 레이블을 추가합니다.
           host: protostar-main
           environment: production
