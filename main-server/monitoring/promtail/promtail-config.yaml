@@ -13,27 +13,26 @@ clients:
 scrape_configs:
   # --- 1. Docker 컨테이너 로그 수집 ---
   - job_name: containers
-    static_configs:
-      - targets:
-          - localhost
-        labels:
-          # Promtail이 로그를 수집할 대상 경로입니다.
-          __path__: /var/log/containers/*log
-          # 모든 컨테이너 로그에 'host'와 'environment' 레이블을 추가합니다.
-          host: protostar-main
-          environment: production
-    pipeline_stages:
-      # Docker 로그에서 컨테이너 이름, ID, 이미지 등의 메타데이터를 추출합니다.
-      - json:
-          expressions:
-            output: log
-            stream: stream 
-      - regex: 
-          expression: '^(?P<container_name>[a-zA-Z0-9_.-]+)'
-          source: filename
-      - labels:
-          stream: stream
-          container_name: container_name
+    # --- Docker Service Discovery with Labeling ---
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+    
+    relabel_configs:
+      # 1. 컨테이너 이름 추출 (/main-nestjs-blue -> main-nestjs-blue)
+      - source_labels: ['__meta_docker_container_name']
+        regex: '/(.*)'
+        target_label: 'container_name'
+      
+      # 2. 로그 스트림 (stdout/stderr) 추출
+      - source_labels: ['__meta_docker_container_log_stream']
+        target_label: 'stream'
+
+      # 3. 고정 라벨 추가
+      - target_label: 'host'
+        replacement: 'protostar-main'
+      - target_label: 'environment'
+        replacement: 'production'
 
   # --- 2. 시스템 로그 수집 (선택적) ---
   - job_name: system

@@ -118,7 +118,9 @@ services:
     image: grafana/promtail:latest
     volumes:
       # [필수] 컨테이너가 호스트의 로그 파일을 읽을 수 있도록 마운트
-      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      # [필수] Docker Service Discovery를 위해 소켓 마운트
+      - /var/run/docker.sock:/var/run/docker.sock:ro
       # 설정 파일 마운트
       - ./monitoring/promtail/promtail-config.yaml:/etc/promtail/config.yaml
     command: -config.file=/etc/promtail/config.yaml
