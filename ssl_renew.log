@@ -1,0 +1,25 @@
+========================================
+🚀 SSL Renewal Started at 2025. 12. 08. (월) 03:30:02 KST
+   Target Dir: /home/hansol/workspace/project-protostar-server-configs
+========================================
+>> Detected Environment: Main Server (A5) (Profile: main)
+   Target Services -> Certbot: certbot-main / Nginx: nginx-main
+========================================
+[Step 1] Certbot Renew...
+Saving debug log to /var/log/letsencrypt/letsencrypt.log
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Processing /etc/letsencrypt/renewal/service-protostar.ddns.net.conf
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Certificate not yet due for renewal
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+The following certificates are not due for renewal yet:
+  /etc/letsencrypt/live/service-protostar.ddns.net/fullchain.pem expires on 2026-02-28 (skipped)
+No renewals were attempted.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+[Step 2] Nginx Reload...
+2025/12/07 18:30:06 [notice] 264#264: signal process started
+========================================
+✅ SSL Renewal Completed!
+========================================
