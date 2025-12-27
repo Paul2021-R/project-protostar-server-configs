@@ -3,6 +3,10 @@ services:
     profiles: ["main"]
     container_name: ${DOMAIN:-main}-nginx
     image: nginx:alpine
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
     ports:
       - "80:80"
       - "443:443"
