@@ -3,12 +3,18 @@ services:
     profiles: ["main"]
     container_name: ${DOMAIN:-main}-nginx
     image: nginx:alpine
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - ./nginx/nginx_target.conf:/etc/nginx/nginx.conf
-      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/nginx_upstream_nextjs.conf:/etc/nginx/conf.d/service_nextjs.conf
+      - ./nginx/nginx_upstream_nestjs.conf:/etc/nginx/conf.d/service_nestjs.conf
+      - ./nginx/nginx_upstream_fastapi.conf:/etc/nginx/conf.d/service_fastapi.conf
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
     networks:
@@ -54,6 +60,12 @@ services:
     ports:
       - "6379:6379"
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: '512M'
+        reservations:
+          memory: '256M'
 
   node-exporter-main:
     profiles: ["main"]
