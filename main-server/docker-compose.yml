@@ -20,6 +20,13 @@ services:
     networks:
       - main-protostar
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: '512M'
+          cpus: '2.0'
+        reservations:
+          cpus: '1.0'
 
   certbot-main:
     profiles: ["main"]
